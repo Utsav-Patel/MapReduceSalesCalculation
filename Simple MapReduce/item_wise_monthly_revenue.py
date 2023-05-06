@@ -1,4 +1,5 @@
 import csv
+import calendar
 
 from mrjob.job import MRJob
 from mrjob.step import MRStep
@@ -6,34 +7,35 @@ from datetime import datetime
 from constants import K, DATA_PATH
 
 
-class MRItemCount(MRJob):
+class MRItemWiseMonthlyRevenue(MRJob):
 
     def __init__(self, *args, **kwargs):
-        super(MRItemCount, self).__init__(*args, **kwargs)
+        super(MRItemWiseMonthlyRevenue, self).__init__(*args, **kwargs)
         self.csv_reader = None
 
     def mapper1_init(self):
         self.csv_reader = csv.reader(open(DATA_PATH))
 
     def mapper1(self, _, __):
+        f = "%m/%d/%y %H:%M"
         for row in self.csv_reader:
             if row[2].isnumeric():
-                yield row[1], int(row[2])
+                info = datetime.strptime(row[4], f)
+                month = calendar.month_abbr[info.month]
+                yield (str(month), str(row[1])), int(row[2]) * float(row[3])
 
-    def reducer1(self, product, quantities):
-        # print('Hello')
-        # print(product)
-        # sys.stdout.write(product.encode())
-        yield product, sum(quantities)
+    def reducer1(self, month_product, revenue):
+        yield month_product, sum(revenue)
 
-    def mapper2(self, product, quantity):
-        yield None, (quantity, product)
+    def mapper2(self, month_product, revenue):
+        yield month_product[1], (revenue, month_product[0])
 
-    def reducer2(self, _, tuples):
+    def reducer2(self, product, tuples):
         tuples = list(tuples)
         tuples.sort(reverse=True)
+
         for i in range(K):
-            yield i+1, ('Product: ' + tuples[i][1] + ' Quantity: ' + str(tuples[i][0]))
+            yield product, (tuples[i][1], tuples[i][0])
 
     def steps(self):
         return [
@@ -43,9 +45,8 @@ class MRItemCount(MRJob):
 
 
 if __name__ == "__main__":
-
     start_time = datetime.now()
-    MRItemCount.run()
+    MRItemWiseMonthlyRevenue.run()
     end_time = datetime.now()
 
     print('Time taken to complete MapReduce job: ', (end_time - start_time))

@@ -1,4 +1,5 @@
 import csv
+import calendar
 
 from mrjob.job import MRJob
 from mrjob.step import MRStep
@@ -6,39 +7,41 @@ from datetime import datetime
 from constants import K, DATA_PATH
 
 
-class MRItemCount(MRJob):
+class MRMonthlyRevenue(MRJob):
 
     def __init__(self, *args, **kwargs):
-        super(MRItemCount, self).__init__(*args, **kwargs)
+        super(MRMonthlyRevenue, self).__init__(*args, **kwargs)
         self.csv_reader = None
 
     def mapper1_init(self):
         self.csv_reader = csv.reader(open(DATA_PATH))
 
     def mapper1(self, _, __):
-        product_quantity = dict()
+        month_revenue = dict()
+        f = "%m/%d/%y %H:%M"
         for row in self.csv_reader:
             if row[2].isnumeric():
-                if row[1] not in product_quantity:
-                    product_quantity[row[1]] = int(row[2])
+                info = datetime.strptime(row[4], f)
+                month = calendar.month_abbr[info.month]
+                if str(month) not in month_revenue:
+                    month_revenue[str(month)] = int(row[2]) * float(row[3])
                 else:
-                    product_quantity[row[1]] += int(row[2])
+                    month_revenue[str(month)] += int(row[2]) * float(row[3])
+        for month in month_revenue:
+            yield month, month_revenue[month]
 
-        for product in product_quantity:
-            yield product, product_quantity[product]
+    def reducer1(self, month, revenue):
+        yield month, sum(revenue)
 
-    def reducer1(self, product, quantities):
-        assert len(list(quantities)) == 1
-        yield product, sum(quantities)
-
-    def mapper2(self, product, quantity):
-        yield None, (quantity, product)
+    def mapper2(self, month, revenue):
+        yield None, (revenue, month)
 
     def reducer2(self, _, tuples):
         tuples = list(tuples)
         tuples.sort(reverse=True)
+
         for i in range(K):
-            yield i+1, ('Product: ' + tuples[i][1] + ' Quantity: ' + str(tuples[i][0]))
+            yield tuples[i][1], tuples[i][0]
 
     def steps(self):
         return [
@@ -50,7 +53,7 @@ class MRItemCount(MRJob):
 if __name__ == "__main__":
 
     start_time = datetime.now()
-    MRItemCount.run()
+    MRMonthlyRevenue.run()
     end_time = datetime.now()
 
     print('Time taken to complete MapReduce job: ', (end_time - start_time))

@@ -1,4 +1,5 @@
 import csv
+
 from mrjob.job import MRJob
 from mrjob.step import MRStep
 from datetime import datetime
@@ -17,13 +18,13 @@ class MRItemCount(MRJob):
     def mapper1(self, _, __):
         for row in self.csv_reader:
             if row[2].isnumeric():
-                yield row[1], int(row[2])
+                yield row[1], int(row[2]) * float(row[3])
 
     def combiner1(self, product, quantities):
         yield product, sum(quantities)
 
     def reducer1(self, product, quantities):
-        yield product, sum(quantities)
+        yield product, sum(quantities) 
 
     def mapper2(self, product, quantity):
         yield None, (quantity, product)
@@ -32,7 +33,7 @@ class MRItemCount(MRJob):
         tuples = list(tuples)
         tuples.sort(reverse=True)
         for i in range(K):
-            yield i+1, ('Product: ' + tuples[i][1] + ' Quantity: ' + str(tuples[i][0]))
+            yield i+1, ('Product: ' + tuples[i][1] + ' Total Revenue: ' + str(tuples[i][0]))
 
     def steps(self):
         return [

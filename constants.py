@@ -1,2 +1,3 @@
 K = 12
-DATA_PATH = "/Users/Dell/Documents/My Files/Rutgers/CS553 - Design of Internet Services/MapReduceSalesCalculation/Data/Sales_2019.csv"
+PROJECT_PATH = "/Users/Dell/Documents/My Files/Rutgers/CS553 - Design of Internet Services/MapReduceSalesCalculation"
+DATA_PATH = f"{PROJECT_PATH}/Data/Sales_2019.csv"

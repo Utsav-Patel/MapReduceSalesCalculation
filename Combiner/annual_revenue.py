@@ -1,4 +1,7 @@
+# Time taken to complete MapReduce job:  0:00:04.149309
 import csv
+import sys
+sys.path.append("/Users/Dell/Documents/My Files/Rutgers/CS553 - Design of Internet Services/MapReduceSalesCalculation")
 
 from mrjob.job import MRJob
 from mrjob.step import MRStep

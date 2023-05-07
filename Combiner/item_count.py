@@ -1,4 +1,7 @@
+# Time taken to complete MapReduce job:  0:00:03.630134
 import csv
+import sys
+sys.path.append("/Users/Dell/Documents/My Files/Rutgers/CS553 - Design of Internet Services/MapReduceSalesCalculation")
 from mrjob.job import MRJob
 from mrjob.step import MRStep
 from datetime import datetime
@@ -36,7 +39,9 @@ class MRItemCount(MRJob):
 
     def steps(self):
         return [
-            MRStep(mapper=self.mapper1, mapper_init=self.mapper1_init, combiner=self.combiner1, reducer=self.reducer1),
+            MRStep(mapper=self.mapper1, mapper_init=self.mapper1_init, combiner=self.combiner1, reducer=self.reducer1,
+                   jobconf={"mapred.reduce.tasks": K, "mapred.map.tasks": 1}
+                   ),
             MRStep(mapper=self.mapper2, reducer=self.reducer2)
         ]
 

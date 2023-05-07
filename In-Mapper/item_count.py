@@ -1,4 +1,7 @@
+# Time taken to complete MapReduce job:  0:00:00.721724
 import csv
+import sys
+sys.path.append("/Users/Dell/Documents/My Files/Rutgers/CS553 - Design of Internet Services/MapReduceSalesCalculation")
 
 from mrjob.job import MRJob
 from mrjob.step import MRStep
@@ -28,7 +31,6 @@ class MRItemCount(MRJob):
             yield product, product_quantity[product]
 
     def reducer1(self, product, quantities):
-        assert len(list(quantities)) == 1
         yield product, sum(quantities)
 
     def mapper2(self, product, quantity):

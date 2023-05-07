@@ -1,5 +1,8 @@
+# Time taken to complete MapReduce job:  0:00:10.003302
 import csv
 import calendar
+import sys
+sys.path.append("/Users/Dell/Documents/My Files/Rutgers/CS553 - Design of Internet Services/MapReduceSalesCalculation")
 
 from mrjob.job import MRJob
 from mrjob.step import MRStep
@@ -37,7 +40,6 @@ class MRItemCount(MRJob):
     def reducer2(self, product, tuples):
         tuples = list(tuples)
         tuples.sort(reverse=True)
-
         for i in range(K):
             yield product, (tuples[i][1], tuples[i][0])
 
